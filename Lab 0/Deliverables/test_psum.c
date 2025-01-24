@@ -90,6 +90,11 @@ int main(int argc, char *argv[])
   float *in, *out;
   long int x, n;
   double wd;
+  struct timespec time_start, time_stop;
+
+
+  double psum1_time[NUM_TESTS];
+  double psum2_time[NUM_TESTS];
 
   // initialize
   in = (float *) malloc(MAX_SIZE * sizeof(*in));
@@ -104,16 +109,28 @@ int main(int argc, char *argv[])
   /* ADD CODE to measure "start" time */
   for (x=0; x<NUM_TESTS && (n = A*x*x + B*x + C, n<MAX_SIZE); x++) {
     /* ADD CODE to call psum1 and measure "stop" time */
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
+    psum1(in, out, n);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
+    psum1_time[x] = interval(time_start, time_stop);
   }
 
 
   /* ADD CODE to repeat tests and measurements using psum2() */
 
-
+  for (x=0; x<NUM_TESTS && (n = A*x*x + B*x + C, n<MAX_SIZE); x++) {
+    /* ADD CODE to call psum1 and measure "stop" time */
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
+    psum2(in, out, n);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
+    psum2_time[x] = interval(time_start, time_stop);
+  }
+  
   /* output timing */
   printf("n, psum1, psum2\n");
   /* ADD code to print out times for each value of n */
-
+  for (x=0; x<NUM_TESTS && (n = A*x*x + B*x + C, n<MAX_SIZE); x++) {
+    printf("%ld, %f, %f\n", n, psum1_time[x], psum2_time[x]);
 
   /* Here we print things to prevent overzealous optimization */
   x = NUM_TESTS-1; n = A*x*x + B*x + C;
