@@ -131,8 +131,6 @@ int main(int argc, char *argv[])
   }
   printf("Wakeup delay calculated the value %f\n", wd);
 
-  free(in);
-  free(out);
   return 0;
 } /* end of main() */
 
