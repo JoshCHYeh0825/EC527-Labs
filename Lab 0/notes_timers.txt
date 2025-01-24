@@ -1,0 +1,190 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The simplest method of getting timing is with the shell-level "time"
+command. This gets invoked simply by typing "time" before the rest of
+the command line.
+
+$ time ./test_timers
+
+real    0m0.993s
+user    0m0.989s
+sys     0m0.002s
+
+For multithreaded programs ... ?!??? We will come back to this later
+in the semester.
+
+
+To measure time intervals WITHIN your code, there are serveral options:
+
+  times() -- elapsed time in ticks (what is a tick??)
+  gettimeofday() -- elapsed time in microseconds
+  RDTSC -- invokes the assembly language (intrinsic) rdtsc to get cycle count
+        -- very low overhead, but requires calibration
+  clock_gettime() -- nanosecond resolution, substantial overhead.
+
+Note the axes of variation:
+  -- what time is being measured?  user?  total?  system?  per thread?
+  -- resolution:  s?  ms?  us?  ns?
+  -- overhead
+  -- portability?  Is this machine or OS dependent?
+  -- reliable?  Does the returned value always mean the same thing?
+
+See the sample program test_timers.c.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+gettimeofday() --
+
+#include <sys/time.h>
+#include <time.h>
+
+ int gettimeofday(struct timeval *tv, struct timezone *tz);
+
+The functions gettimeofday() and settimeofday() can get and set the
+time as well as a timezone.  The tv argument is a struct timeval (as
+specified in <sys/time.h>):
+
+ struct timeval {
+        time_t       tv_sec;   /* seconds */
+        suseconds_t  tv_usec;  /* microseconds */
+ };
+
+and gives the number of seconds and microseconds since the Epoch (see time(2)).
+
+------------------------------------------------------------------------------
+Sample Code using gettimeofday()
+
+inline double usecs_of_timeval(struct timeval * p_tv)
+{
+  return((double) p_tv->tv_sec) * 1e6 + ((double) p_tv->tv_usec);
+}
+
+  long int i, steps;
+  double sec0, sec;   /* timing variables */
+  struct timeval tv_start, tv_stop;
+
+  printf("\n Hello World! Ticks = %d\n", CLK_TCK);
+  gettimeofday(&tv_start, NULL);         // start timer
+  /* DO SOMETHING THAT TAKES TIME */
+  gettimeofday(&tv_stop, NULL);          // stop timer
+  delta = usecs_of_timeval(&tv_stop) - usecs_of_timeval(&tv_start);
+  printf("\n Time = %15.9f \n", delta/1000000);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+times()    // a UNIX utility:  gets time in clock ticks
+
+#include <sys/times.h>
+clock_t times(struct tms *buf);  
+
+DESCRIPTION -- The times() function stores the current process times
+in the struct tms that buf points to. The struct tms is as defined in
+<sys/times.h>:
+
+struct tms {
+  clock_t tms_utime;  /* user time */ 
+  clock_t tms_stime;  /* system time */
+  clock_t tms_cutime; /* user time of children */ 
+  clock_t tms_cstime; /* system time of children */ 
+};
+
+
+------------------------------------------------------------------------------
+Sample Code using times()
+
+double get_seconds() {  /* routine to read time */
+  struct tms rusage;
+  times(&rusage);       /* UNIX utility: time in clock ticks */
+  return (double)(rusage.tms_utime)/100; /* 100 tics per second? */
+}
+
+  double sec0, sec;      /* timing variables */
+
+  sec0 = get_seconds();  /* start timer */
+  /* DO SOMETHING THAT TAKES TIME */
+  sec = (get_seconds() - sec0); /* - overhead */
+  printf("\n Seconds = %14.8f \n", sec);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+RDTSC -- Read Time Stamp Counter -- returns the number of clock cycles
+     since the CPU was powered up or reset. RDTSC is a two byte instruction
+     (0F 31) and returns a 64-bit count in EDX:EAX.
+
+Early on RDTSC was reported as a god-send -- Intel had finally
+provided a cycle counter. But this state of affairs didn't last long:
+soon out-of-order execution, variable speed clock ("turbo boost"), and
+other improvements made the cycle count far less useful. Still, it can
+be useful for benchmarking if it is used to average multiple attempts
+that take a non-trivial amount of time (say, more than 0.1 seconds
+each). But even here there are complications:
+
+    RDTSC measures CPU cycles, *NOT* elapsed time.
+
+Most Intel CPUs since about 2009 will throttle their clock speed up
+and down in response to: chip temperature, number of processes that
+are runnable (not blocked waiting for I/O or a signal), TDP settings,
+etc. So, a CPU clock cycle represents a variable amount of elapsed
+time. This is of course CPU and OS dependant.
+
+------------------------------------------------------------------------------
+Sample Code using RDTSC()
+
+typedef union {
+  unsigned long long int64;
+  struct {unsigned int lo, hi;} int32;
+} tsc_counter;
+
+#define RDTSC(cpu_c)              \
+  __asm__ __volatile__ ("rdtsc" : \
+  "=a" ((cpu_c).int32.lo),        \
+  "=d"((cpu_c).int32.hi))
+
+  long long int delta_int;
+
+  RDTSC(t_0);
+  /* DO SOMETHING THAT TAKES TIME */
+  RDTSC(t_1);
+  delta_int = t_1.int64-t_0.int64;
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+clock_gettime()
+
+Perhaps the best way to do fine-grained timing on Linux systems. There
+are a number of clock options -- we use CLOCK_PROCESS_CPUTIME_ID here.
+Some users complain about high overhead (250ns ?), but I've found (so
+far) that this is not much of a problem for controllable studies. That
+is, experiments where you can subtract off overhead of all kinds.
+
+Note -- on lab machines you need to link using -lrt.
+
+------------------------------------------------------------------------------
+Sample Code using clock_gettime()
+
+#include <time.h>
+
+#define SIZE 10000000
+
+// in time.h
+struct timespec {
+  time_t tv_sec; /* seconds */
+  long tv_nsec;  /* nanoseconds */
+};
+
+  struct timespec time1;
+  struct timespec time2;
+  int clock_gettime(clockid_t clk_id, struct timespec *tp);
+
+  // read the clock
+  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
+
+  /* DO SOMETHING THAT TAKES TIME */
+
+  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
