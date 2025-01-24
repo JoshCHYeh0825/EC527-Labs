@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
   }
   printf("Wakeup delay calculated the value %f\n", wd);
 } /* end of main() */
-
+}
 
 void psum1(float a[], float p[], long int n)
 {
