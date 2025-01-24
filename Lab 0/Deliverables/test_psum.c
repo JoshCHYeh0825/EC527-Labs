@@ -170,3 +170,10 @@ void psum2(float a[], float p[], long int n)
     p[i] = p[i-1] + a[i];
   }
 }
+
+bash-4.4$ gcc -O1 test_psum.c -lm -lrt -o test_psum
+bash-4.4$ ./test_psum
+n, psum1, psum2
+100, 0.000001, 0.000000
+The biggest psum output value is: 0
+Wakeup delay calculated the value 1.005707
