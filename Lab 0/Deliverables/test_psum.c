@@ -160,3 +160,4 @@ void psum2(float a[], float p[], long int n)
     p[i] = p[i-1] + a[i];
   }
 }
+
