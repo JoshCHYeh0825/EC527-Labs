@@ -107,8 +107,8 @@ int main(int argc, char *argv[])
 
   /* process psum1 for various array sizes with psum1() and collect timing */
   /* ADD CODE to measure "start" time */
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
   for (x=0; x<NUM_TESTS && (n = A*x*x + B*x + C, n<MAX_SIZE); x++) {
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
     /* ADD CODE to call psum1 and measure "stop" time */
     psum1(in, out, n);
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
@@ -117,9 +117,9 @@ int main(int argc, char *argv[])
 
 
   /* ADD CODE to repeat tests and measurements using psum2() */
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
   for (x=0; x<NUM_TESTS && (n = A*x*x + B*x + C, n<MAX_SIZE); x++) {
     /* ADD CODE to call psum1 and measure "stop" time */
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
     psum2(in, out, n);
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
     psum2_time[x] = interval(time_start, time_stop);
