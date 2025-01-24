@@ -33,6 +33,19 @@ void psum2(float a[], float p[], long int n);
         };
  */
 
+struct timespec diff(struct timespec start, struct timespec end)
+{
+  struct timespec temp;
+  if ((end.tv_nsec-start.tv_nsec)<0) {
+    temp.tv_sec = end.tv_sec-start.tv_sec-1;
+    temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+  } else {
+    temp.tv_sec = end.tv_sec-start.tv_sec;
+    temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+  }
+  return temp;
+}
+
 double interval(struct timespec start, struct timespec end)
 {
   struct timespec temp;
@@ -90,8 +103,11 @@ int main(int argc, char *argv[])
   float *in, *out;
   long int x, n;
   double wd;
+  
   struct timespec time_start, time_stop;
-
+  struct timespec meas = diff(time_start, time_stop);
+  time_sec = measurement.tv_sec;
+  time_ns  = measurement.tv_nsec;
 
   double psum1_time[NUM_TESTS];
   double psum2_time[NUM_TESTS];
@@ -112,6 +128,7 @@ int main(int argc, char *argv[])
     /* ADD CODE to call psum1 and measure "stop" time */
     psum1(in, out, n);
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
+
     psum1_time[x] = interval(time_start, time_stop);
   }
 
@@ -170,10 +187,3 @@ void psum2(float a[], float p[], long int n)
     p[i] = p[i-1] + a[i];
   }
 }
-
-bash-4.4$ gcc -O1 test_psum.c -lm -lrt -o test_psum
-bash-4.4$ ./test_psum
-n, psum1, psum2
-100, 0.000001, 0.000000
-The biggest psum output value is: 0
-Wakeup delay calculated the value 1.005707
