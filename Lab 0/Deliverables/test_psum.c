@@ -21,7 +21,6 @@
 void psum1(float a[], float p[], long int n);
 void psum2(float a[], float p[], long int n);
 
-
 /* -=-=-=-=- Time measurement by clock_gettime() -=-=-=-=- */
 /*
   As described in the clock_gettime manpage (type "man clock_gettime" at the
@@ -32,6 +31,18 @@ void psum2(float a[], float p[], long int n);
           long     tv_nsec;  // and nanoseconds
         };
  */
+
+double interval(struct timespec start, struct timespec end)
+{
+  struct timespec temp;
+  temp.tv_sec = end.tv_sec - start.tv_sec;
+  temp.tv_nsec = end.tv_nsec - start.tv_nsec;
+  if (temp.tv_nsec < 0) {
+    temp.tv_sec = temp.tv_sec - 1;
+    temp.tv_nsec = temp.tv_nsec + 1000000000;
+  }
+  return (((double)temp.tv_sec) + ((double)temp.tv_nsec)*1.0e-9);
+}
 
 struct timespec diff(struct timespec start, struct timespec end)
 {
@@ -45,31 +56,6 @@ struct timespec diff(struct timespec start, struct timespec end)
   }
   return temp;
 }
-
-double interval(struct timespec start, struct timespec end)
-{
-  struct timespec temp;
-  temp.tv_sec = end.tv_sec - start.tv_sec;
-  temp.tv_nsec = end.tv_nsec - start.tv_nsec;
-  if (temp.tv_nsec < 0) {
-    temp.tv_sec = temp.tv_sec - 1;
-    temp.tv_nsec = temp.tv_nsec + 1000000000;
-  }
-  return (((double)temp.tv_sec) + ((double)temp.tv_nsec)*1.0e-9);
-}
-/*
-     This method does not require adjusting a #define constant
-
-  How to use this method:
-
-      struct timespec time_start, time_stop;
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
-      // DO SOMETHING THAT TAKES TIME
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
-      measurement = interval(time_start, time_stop);
-
- */
-
 
 /* -=-=-=-=- End of time measurement declarations =-=-=-=- */
 
@@ -96,21 +82,14 @@ double wakeup_delay()
   return quasi_random;
 }
 
-
 /****************************************************************************/
 int main(int argc, char *argv[])
 {
   float *in, *out;
   long int x, n;
   double wd;
-  
   struct timespec time_start, time_stop;
-  struct timespec meas = diff(time_start, time_stop);
-  time_sec = measurement.tv_sec;
-  time_ns  = measurement.tv_nsec;
-
-  double psum1_time[NUM_TESTS];
-  double psum2_time[NUM_TESTS];
+  double time_psum1[NUM_TESTS], time_psum2[NUM_TESTS];
 
   // initialize
   in = (float *) malloc(MAX_SIZE * sizeof(*in));
@@ -122,32 +101,26 @@ int main(int argc, char *argv[])
   wd = wakeup_delay();
 
   /* process psum1 for various array sizes with psum1() and collect timing */
-  /* ADD CODE to measure "start" time */
   for (x=0; x<NUM_TESTS && (n = A*x*x + B*x + C, n<MAX_SIZE); x++) {
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
-    /* ADD CODE to call psum1 and measure "stop" time */
     psum1(in, out, n);
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
-
-    psum1_time[x] = interval(time_start, time_stop);
+    time_psum1[x] = interval(time_start, time_stop);
   }
 
-
-  /* ADD CODE to repeat tests and measurements using psum2() */
+  /* process psum2 for various array sizes with psum2() and collect timing */
   for (x=0; x<NUM_TESTS && (n = A*x*x + B*x + C, n<MAX_SIZE); x++) {
-    /* ADD CODE to call psum1 and measure "stop" time */
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
     psum2(in, out, n);
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
-    psum2_time[x] = interval(time_start, time_stop);
+    time_psum2[x] = interval(time_start, time_stop);
   }
 
-  
   /* output timing */
   printf("n, psum1, psum2\n");
-  /* ADD code to print out times for each value of n */
   for (x=0; x<NUM_TESTS && (n = A*x*x + B*x + C, n<MAX_SIZE); x++) {
-    printf("%ld, %f, %f\n", n, psum1_time[x], psum2_time[x]);
+    printf("%ld, %f, %f\n", n, time_psum1[x], time_psum2[x]);
+  }
 
   /* Here we print things to prevent overzealous optimization */
   x = NUM_TESTS-1; n = A*x*x + B*x + C;
@@ -157,9 +130,11 @@ int main(int argc, char *argv[])
     printf("psum was not called for the %dth size because it is bigger than MAXSIZE\n", x+1);
   }
   printf("Wakeup delay calculated the value %f\n", wd);
-} /* end of main() */
-}
 
+  free(in);
+  free(out);
+  return 0;
+} /* end of main() */
 
 void psum1(float a[], float p[], long int n)
 {
