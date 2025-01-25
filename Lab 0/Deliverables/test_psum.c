@@ -11,11 +11,11 @@
 
 /* We want to test a variety of test sizes. We will generate these
    using the quadratic formula:  A x^2 + B x + C                     */
-#define A   4  // coefficient of x^2
-#define B  20  // coefficient of x
+#define A   100  // coefficient of x^2
+#define B  250  // coefficient of x
 #define C 100  // constant term
 
-#define NUM_TESTS 20   /* Number of different sizes to test */
+#define NUM_TESTS 50   /* Number of different sizes to test */
 
 /* Prototypes */
 void psum1(float a[], float p[], long int n);
@@ -34,6 +34,7 @@ void psum2(float a[], float p[], long int n);
 
 double interval(struct timespec start, struct timespec end)
 {
+
   struct timespec temp;
   temp.tv_sec = end.tv_sec - start.tv_sec;
   temp.tv_nsec = end.tv_nsec - start.tv_nsec;
