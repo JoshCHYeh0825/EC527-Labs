@@ -1,0 +1,69 @@
+This machine supports 8 threads.,,,
+,,,
+We will test up to 16 simultaneous copies of a STREAM memory-copy,,,
+benchmark, each using a buffer size up to 67108864 bytes.,,
+,,,
+The bandwidth is a function of two independent variables: the number,,,
+of simultaneous tasks, and the size of the data array that each task,,
+is repeatedly copying. For each combination of these, two measurements,,
+of bandwidth are printed out: total bandwidth (achieved by all tasks,,,
+combined), and bandwidth per task. Units are:,,
+,,,
+  tasks: unitless integer,,,
+  memsize: amount of memory used by each task, in bytes,,
+  bandwidth: bandwidth achieved by all tasks combined, in bytes/second,,
+  BW/task: bandwidth per task, in bytes/second,,
+,,,
+This will take some time, and the processor load will steadily increase.,,
+If the computer's fans are making noise, that's probably why.,,
+,,,
+tasks,Memsize,Bandwidth 1 Task,   BW/task
+1,1024,3.43E+10,3.43E+10
+1,4096,3.51E+10,3.51E+10
+1,16384,3.53E+10,3.53E+10
+1,65536,3.39E+10,3.39E+10
+1,262144,3.68E+10,3.68E+10
+1,1048576,3.65E+10,3.65E+10
+1,4194304,3.55E+10,3.55E+10
+1,16777216,3.28E+10,3.28E+10
+1,67108864,3.06E+10,3.06E+10
+,Memsize,Bandwidth 2 Tasks,
+2,1024,6.74E+10,3.37E+10
+2,4096,6.82E+10,3.41E+10
+2,16384,6.96E+10,3.48E+10
+2,65536,6.44E+10,3.22E+10
+2,262144,7.17E+10,3.58E+10
+2,1048576,7.20E+10,3.60E+10
+2,4194304,6.84E+10,3.42E+10
+2,16777216,4.56E+10,2.28E+10
+2,67108864,3.72E+10,1.86E+10
+,Memsize,Bandwidth 4 Tasks,
+4,1024,1.32E+11,3.29E+10
+4,4096,1.26E+11,3.15E+10
+4,16384,1.35E+11,3.37E+10
+4,65536,1.31E+11,3.28E+10
+4,262144,1.41E+11,3.52E+10
+4,1048576,1.39E+11,3.49E+10
+4,4194304,9.42E+10,2.36E+10
+4,16777216,3.70E+10,9.26E+09
+4,67108864,3.36E+10,8.40E+09
+,Memsize,Bandwidth 8 Tasks,
+8,1024,2.51E+11,3.13E+10
+8,4096,2.41E+11,3.01E+10
+8,16384,2.25E+11,2.81E+10
+8,65536,2.11E+11,2.63E+10
+8,262144,2.24E+11,2.80E+10
+8,1048576,2.20E+11,2.76E+10
+8,4194304,4.04E+10,5.04E+09
+8,16777216,5.00E+10,6.25E+09
+8,67108864,3.52E+10,4.40E+09
+,Memsize,Bandwidth 16 Tasks,
+16,1024,4.31E+11,2.70E+10
+16,4096,4.37E+11,2.73E+10
+16,16384,4.45E+11,2.78E+10
+16,65536,4.24E+11,2.65E+10
+16,262144,4.49E+11,2.81E+10
+16,1048576,4.39E+11,2.74E+10
+16,4194304,7.17E+10,4.48E+09
+16,16777216,6.89E+10,4.31E+09
+16,67108864,6.94E+10,4.34E+09
