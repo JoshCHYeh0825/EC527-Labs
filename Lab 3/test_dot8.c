@@ -24,15 +24,15 @@
 #include <smmintrin.h>
 #include <immintrin.h>
 
-#define CPNS 2.0    /* Cycles per nanosecond -- Adjust to your computer,
+#define CPNS 3.0    /* Cycles per nanosecond -- Adjust to your computer,
                        for example a 3.2 GHz GPU, this would be 3.2 */
 
 
 /* We want to test a range of work sizes. We will generate these
    using the quadratic formula:  A x^2 + B x + C                     */
-#define A   1  /* coefficient of x^2 */
-#define B   1  /* coefficient of x */
-#define C   10  /* constant term */
+#define A   (9848./81)  /* coefficient of x^2 */
+#define B   16  /* coefficient of x */
+#define C   8  /* constant term */
 
 #define NUM_TESTS 10
 
@@ -42,7 +42,7 @@
 #define OPTIONS 6       // MAKE 8 AFTER ADDING dot8_4, dot8_8
 #define IDENT 1.0
 
-typedef double data_t;
+typedef float data_t;
 
 /* Create abstract data type for vector */
 typedef struct {
@@ -581,6 +581,7 @@ void dot8(array_ptr v0, array_ptr v1, data_t *dest)
 /* dot8_2:  Vector, 2 accumulators */
 void dot8_2(array_ptr v0, array_ptr v1, data_t *dest)
 {
+  long int i;
   long int get_array_length(array_ptr v);
   data_t *get_array_start(array_ptr v);
   long int cnt = get_array_length(v0);
@@ -592,7 +593,7 @@ void dot8_2(array_ptr v0, array_ptr v1, data_t *dest)
   pack_t xfer;
 
   /* initialize accum entries to 0 */
-  for (long i = 0; i < VSIZE; i++) {
+  for (i = 0; i < VSIZE; i++) {
     xfer.d[i] = (data_t)(0);
   }
   accum0 = xfer.v;
