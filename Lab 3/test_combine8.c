@@ -582,7 +582,7 @@ void combine8_8(array_ptr v, data_t *dest)
   }
 
   /* Step through data with VSIZE-way parallelism */
-  while (cnt >= 4*VSIZE) {
+  while (cnt >= 8*VSIZE) {
     vec_t chunk0 = *((vec_t *) data);
     vec_t chunk1 = *((vec_t *) data+VSIZE);
     vec_t chunk2 = *((vec_t *) data+2*VSIZE);
