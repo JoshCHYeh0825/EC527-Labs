@@ -79,8 +79,8 @@ void dot6_2(array_ptr v0, array_ptr v1, data_t *dest);
 void dot6_5(array_ptr v0, array_ptr v1, data_t *dest);
 void dot8(array_ptr v0, array_ptr v1, data_t *dest);
 void dot8_2(array_ptr v0, array_ptr v1, data_t *dest);
-//  void dot8_4(array_ptr v0, array_ptr v1, data_t *dest);
-//  void dot8_8(array_ptr v0, array_ptr v1, data_t *dest);
+void dot8_4(array_ptr v0, array_ptr v1, array_ptr v2, array_ptr v3, data_t *dest);
+void dot8_8(array_ptr v0, array_ptr v1, array_ptr v2, array_ptr v3, array_ptr v4, array_ptr v5, array_ptr v6, array_ptr v7, data_t *dest);
 
 
 /* -=-=-=-=- Time measurement by clock_gettime() -=-=-=-=- */
@@ -171,6 +171,18 @@ int main(int argc, char *argv[])
   init_array(v0, alloc_size);
   array_ptr v1 = new_array(alloc_size);
   init_array(v1, alloc_size);
+  array_ptr v2 = new_array(alloc_size);
+  init_array(v2, alloc_size);
+  array_ptr v3 = new_array(alloc_size);
+  init_array(v3, alloc_size);
+  array_ptr v4 = new_array(alloc_size);
+  init_array(v4, alloc_size);
+  array_ptr v5 = new_array(alloc_size);
+  init_array(v5, alloc_size);
+  array_ptr v6 = new_array(alloc_size);
+  init_array(v6, alloc_size);
+  array_ptr v7 = new_array(alloc_size);
+  init_array(v7, alloc_size);
   data_holder = (data_t *) malloc(sizeof(data_t));
 
   /* For the question that asks you to debug dot2_8(), change this
@@ -275,7 +287,7 @@ int main(int argc, char *argv[])
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
     time_stamp[OPTION][x] = interval(time_start, time_stop);
   }
-  /*
+
   OPTION++;
   printf("testing option %d\n", OPTION);
   for (x=0; x<NUM_TESTS && (n = A*x*x + B*x + C, n<=alloc_size); x++) {
@@ -283,19 +295,32 @@ int main(int argc, char *argv[])
     set_array_length(v1, n);
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
     for (long k=0; k<OUTER_LOOPS; k++) {
-      dot8_4(v0, v1, data_holder);
+      dot8_4(v0, v1, v2, v3, data_holder);
     }
     result_values[OPTION][x] = *data_holder;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
     time_stamp[OPTION][x] = interval(time_start, time_stop);
   }
-  */
+
+  OPTION++;
+  printf("testing option %d\n", OPTION);
+  for (x=0; x<NUM_TESTS && (n = A*x*x + B*x + C, n<=alloc_size); x++) {
+    set_array_length(v0, n);
+    set_array_length(v1, n);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
+    for (long k=0; k<OUTER_LOOPS; k++) {
+      dot8_8(v0, v1, v2, v3, v4, v5, v6, v7, data_holder);
+    }
+    result_values[OPTION][x] = *data_holder;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
+    time_stamp[OPTION][x] = interval(time_start, time_stop);
+  }
 
   printf("\n");
 
   /* output times */
   printf("Computed dot products:\n");
-  printf("size, dot4, dot5, dot6_2, dot6_5, dot8, dot8_2\n");
+  printf("size, dot4, dot5, dot6_2, dot6_5, dot8, dot8_2, dot8_4, dot8_8\n");
   {
     for (int i = 0; i < x; i++) {
       printf("%5ld,  ", (long)(A*i*i + B*i + C));
@@ -311,7 +336,7 @@ int main(int argc, char *argv[])
   printf("\n");
 
   printf("Execution times (in estimated CPU cycles):\n");
-  printf("size*OUTER_LOOPS, dot4, dot5, dot6_2, dot6_5, dot8, dot8_2\n");
+  printf("size*OUTER_LOOPS, dot4, dot5, dot6_2, dot6_5, dot8, dot8_2, dot8_4, dot8_8\n");
   {
     for (int i = 0; i < x; i++) {
       printf("%8ld,  ", (long)((A*i*i + B*i + C) * OUTER_LOOPS));
@@ -619,7 +644,7 @@ void dot8_2(array_ptr v0, array_ptr v1, data_t *dest)
   }
 
   /* Single step through remaining elements */
-  while (cnt>=0) {
+  while (cnt > 0) {
     result += *data0++ * *data1++;
     cnt--;
   }
@@ -633,3 +658,241 @@ void dot8_2(array_ptr v0, array_ptr v1, data_t *dest)
   /* store result */
   *dest = result;
 } /* End of dot8_2 */
+
+/* dot8_4:  Vector, 4 accumulators */
+void dot8_4(array_ptr v0, array_ptr v1, array_ptr v2, array_ptr v3, data_t *dest)
+{
+  long int i;
+  long int get_array_length(array_ptr v);
+  data_t *get_array_start(array_ptr v);
+  long int cnt = get_array_length(v0);
+  data_t *data0 = get_array_start(v0);
+  data_t *data1 = get_array_start(v1);
+  data_t *data2 = get_array_start(v2);
+  data_t *data3 = get_array_start(v3);
+  vec_t accum0;
+  vec_t accum1;
+  vec_t accum2;
+  vec_t accum3;
+  data_t result = 0;
+  pack_t xfer;
+
+  /* initialize accum entries to 0 */
+  for (i = 0; i < VSIZE; i++) {
+    xfer.d[i] = (data_t)(0);
+  }
+  accum0 = xfer.v;
+  accum1 = xfer.v;
+  accum2 = xfer.v;
+  accum3 = xfer.v;
+
+  /* Single step until we have memory alignment */
+  while ((((long) data0) % VBYTES) && cnt) {
+    result += *data0++ * *data1++;
+    cnt--;
+  }
+
+  /* Step through data with VSIZE-way parallelism and dual accumulators */
+  while (cnt >= 4*VSIZE) {
+    vec_t v0chunk0 = *((vec_t *) data0);
+    vec_t v0chunk1 = *((vec_t *) (data0+VSIZE));
+    vec_t v0chunk2 = *((vec_t *) (data0+2*VSIZE));
+    vec_t v0chunk3 = *((vec_t *) (data0+3*VSIZE));
+    vec_t v1chunk0 = *((vec_t *) data1);
+    vec_t v1chunk1 = *((vec_t *) (data1+VSIZE));
+    vec_t v1chunk2 = *((vec_t *) (data1+2*VSIZE));
+    vec_t v1chunk3 = *((vec_t *) (data1+3*VSIZE));
+    vec_t v2chunk0 = *((vec_t *) data2);
+    vec_t v2chunk1 = *((vec_t *) (data2+VSIZE));
+    vec_t v2chunk2 = *((vec_t *) (data2+2*VSIZE));
+    vec_t v2chunk3 = *((vec_t *) (data2+3*VSIZE));
+    vec_t v3chunk0 = *((vec_t *) data3);
+    vec_t v3chunk1 = *((vec_t *) (data3+VSIZE));
+    vec_t v3chunk2 = *((vec_t *) (data3+2*VSIZE));
+    vec_t v3chunk3 = *((vec_t *) (data3+3*VSIZE));
+
+    accum0 = accum0 + (v0chunk0 * v1chunk0) + (v2chunk0 * v3chunk0);
+    accum1 = accum1 + (v0chunk1 * v1chunk1) + (v2chunk1 * v3chunk1);
+    accum2 = accum2 + (v0chunk2 * v1chunk2) + (v2chunk2 * v3chunk2);
+    accum3 = accum3 + (v0chunk3 * v1chunk3) + (v2chunk3 * v3chunk3);    
+
+    data0 += 4*VSIZE;
+    data1 += 4*VSIZE;
+    data2 += 4*VSIZE;
+    data3 += 4*VSIZE;
+    cnt -= 4*VSIZE;
+  }
+
+  /* Single step through remaining elements */
+  while (cnt > 0) {
+    result += (*data0++ * *data1++) + (*data2++ * *data3++);
+    cnt--;
+}
+
+
+  /* Combine elements of accumulator vector */
+  xfer.v = accum0 + accum1 + accum2 + accum3;
+  for (long i = 0; i < VSIZE; i++) {
+    result += xfer.d[i];
+  }
+
+  /* store result */
+  *dest = result;
+} /* End of dot8_4 */
+
+/* dot8_8:  Vector, 8 accumulators */
+void dot8_8(array_ptr v0, array_ptr v1, array_ptr v2, array_ptr v3, array_ptr v4, array_ptr v5, array_ptr v6, array_ptr v7, data_t *dest)
+{
+  long int i;
+  long int get_array_length(array_ptr v);
+  data_t *get_array_start(array_ptr v);
+  long int cnt = get_array_length(v0);
+  data_t *data0 = get_array_start(v0);
+  data_t *data1 = get_array_start(v1);
+  data_t *data2 = get_array_start(v2);
+  data_t *data3 = get_array_start(v3);
+  data_t *data4 = get_array_start(v4);
+  data_t *data5 = get_array_start(v5);
+  data_t *data6 = get_array_start(v6);
+  data_t *data7 = get_array_start(v7);
+
+  vec_t accum0;
+  vec_t accum1;
+  vec_t accum2;
+  vec_t accum3;
+  vec_t accum4;
+  vec_t accum5;
+  vec_t accum6;
+  vec_t accum7;
+
+  data_t result = 0;
+  pack_t xfer;
+
+  /* initialize accum entries to 0 */
+  for (i = 0; i < VSIZE; i++) {
+    xfer.d[i] = (data_t)(0);
+  }
+  accum0 = xfer.v;
+  accum1 = xfer.v;
+  accum2 = xfer.v;
+  accum3 = xfer.v;
+  accum4 = xfer.v;
+  accum5 = xfer.v;
+  accum6 = xfer.v;
+  accum7 = xfer.v;
+
+  /* Single step until we have memory alignment */
+  while ((((long) data0) % VBYTES) && cnt) {
+    result += *data0++ * *data1++;
+    cnt--;
+  }
+
+  /* Step through data with VSIZE-way parallelism and dual accumulators */
+  while (cnt >= 8*VSIZE) {
+    vec_t v0chunk0 = *((vec_t *) data0);
+    vec_t v0chunk1 = *((vec_t *) data0+VSIZE);
+    vec_t v0chunk2 = *((vec_t *) data0+2*VSIZE);
+    vec_t v0chunk3 = *((vec_t *) data0+3*VSIZE);
+    vec_t v0chunk4 = *((vec_t *) data0+4*VSIZE);
+    vec_t v0chunk5 = *((vec_t *) data0+5*VSIZE);
+    vec_t v0chunk6 = *((vec_t *) data0+6*VSIZE);
+    vec_t v0chunk7 = *((vec_t *) data0+7*VSIZE);
+    
+    vec_t v1chunk0 = *((vec_t *) data1);
+    vec_t v1chunk1 = *((vec_t *) data1+VSIZE);
+    vec_t v1chunk2 = *((vec_t *) data1+2*VSIZE);
+    vec_t v1chunk3 = *((vec_t *) data1+3*VSIZE);
+    vec_t v1chunk4 = *((vec_t *) data1+4*VSIZE);
+    vec_t v1chunk5 = *((vec_t *) data1+5*VSIZE);
+    vec_t v1chunk6 = *((vec_t *) data1+6*VSIZE);
+    vec_t v1chunk7 = *((vec_t *) data1+7*VSIZE);
+
+    vec_t v2chunk0 = *((vec_t *) data2);
+    vec_t v2chunk1 = *((vec_t *) (data2+VSIZE));
+    vec_t v2chunk2 = *((vec_t *) (data2+2*VSIZE));
+    vec_t v2chunk3 = *((vec_t *) (data2+3*VSIZE));
+    vec_t v2chunk4 = *((vec_t *) (data2+4*VSIZE));
+    vec_t v2chunk5 = *((vec_t *) (data2+5*VSIZE));
+    vec_t v2chunk6 = *((vec_t *) (data2+6*VSIZE));
+    vec_t v2chunk7 = *((vec_t *) (data2+7*VSIZE));
+
+    vec_t v3chunk0 = *((vec_t *) data3);
+    vec_t v3chunk1 = *((vec_t *) (data3+VSIZE));
+    vec_t v3chunk2 = *((vec_t *) (data3+2*VSIZE));
+    vec_t v3chunk3 = *((vec_t *) (data3+3*VSIZE));
+    vec_t v3chunk4 = *((vec_t *) (data3+4*VSIZE));
+    vec_t v3chunk5 = *((vec_t *) (data3+5*VSIZE));
+    vec_t v3chunk6 = *((vec_t *) (data3+6*VSIZE));
+    vec_t v3chunk7 = *((vec_t *) (data3+7*VSIZE));
+
+    vec_t v4chunk0 = *((vec_t *) data4);
+    vec_t v4chunk1 = *((vec_t *) (data4+VSIZE));
+    vec_t v4chunk2 = *((vec_t *) (data4+2*VSIZE));
+    vec_t v4chunk3 = *((vec_t *) (data4+3*VSIZE));
+    vec_t v4chunk4 = *((vec_t *) (data4+4*VSIZE));
+    vec_t v4chunk5 = *((vec_t *) (data4+5*VSIZE));
+    vec_t v4chunk6 = *((vec_t *) (data4+6*VSIZE));
+    vec_t v4chunk7 = *((vec_t *) (data4+7*VSIZE));
+
+    vec_t v5chunk0 = *((vec_t *) data5);
+    vec_t v5chunk1 = *((vec_t *) (data5+VSIZE));
+    vec_t v5chunk2 = *((vec_t *) (data5+2*VSIZE));
+    vec_t v5chunk3 = *((vec_t *) (data5+3*VSIZE));
+    vec_t v5chunk4 = *((vec_t *) (data5+4*VSIZE));
+    vec_t v5chunk5 = *((vec_t *) (data5+5*VSIZE));
+    vec_t v5chunk6 = *((vec_t *) (data5+6*VSIZE));
+    vec_t v5chunk7 = *((vec_t *) (data5+7*VSIZE));
+
+    vec_t v6chunk0 = *((vec_t *) data6);
+    vec_t v6chunk1 = *((vec_t *) (data6+VSIZE));
+    vec_t v6chunk2 = *((vec_t *) (data6+2*VSIZE));
+    vec_t v6chunk3 = *((vec_t *) (data6+3*VSIZE));
+    vec_t v6chunk4 = *((vec_t *) (data6+4*VSIZE));
+    vec_t v6chunk5 = *((vec_t *) (data6+5*VSIZE));
+    vec_t v6chunk6 = *((vec_t *) (data6+6*VSIZE));
+    vec_t v6chunk7 = *((vec_t *) (data6+7*VSIZE));
+
+    vec_t v7chunk0 = *((vec_t *) data7);
+    vec_t v7chunk1 = *((vec_t *) (data7+VSIZE));
+    vec_t v7chunk2 = *((vec_t *) (data7+2*VSIZE));
+    vec_t v7chunk3 = *((vec_t *) (data7+3*VSIZE));
+    vec_t v7chunk4 = *((vec_t *) (data7+4*VSIZE));
+    vec_t v7chunk5 = *((vec_t *) (data7+5*VSIZE));
+    vec_t v7chunk6 = *((vec_t *) (data7+6*VSIZE));
+    vec_t v7chunk7 = *((vec_t *) (data7+7*VSIZE));
+
+    accum0 = accum0 + (v0chunk0 * v1chunk0 * v2chunk0 * v3chunk0 * v4chunk0 * v5chunk0 * v6chunk0 * v7chunk0);
+    accum1 = accum1 + (v0chunk1 * v1chunk1 * v2chunk1 * v3chunk1 * v4chunk1 * v5chunk1 * v6chunk1 * v7chunk1);
+    accum2 = accum2 + (v0chunk2 * v1chunk2 * v2chunk2 * v3chunk2 * v4chunk2 * v5chunk2 * v6chunk2 * v7chunk2);
+    accum3 = accum3 + (v0chunk3 * v1chunk3 * v2chunk3 * v3chunk3 * v4chunk3 * v5chunk3 * v6chunk3 * v7chunk3);
+    accum4 = accum4 + (v0chunk4 * v1chunk4 * v2chunk4 * v3chunk4 * v4chunk4 * v5chunk4 * v6chunk4 * v7chunk4);
+    accum5 = accum5 + (v0chunk5 * v1chunk5 * v2chunk5 * v3chunk5 * v4chunk5 * v5chunk5 * v6chunk5 * v7chunk5);
+    accum6 = accum6 + (v0chunk6 * v1chunk6 * v2chunk6 * v3chunk6 * v4chunk6 * v5chunk6 * v6chunk6 * v7chunk6);
+    accum7 = accum7 + (v0chunk7 * v1chunk7 * v2chunk7 * v3chunk7 * v4chunk7 * v5chunk7 * v6chunk7 * v7chunk7);
+
+    data0 += 8*VSIZE;
+    data1 += 8*VSIZE;
+    data2 += 8*VSIZE;
+    data3 += 8*VSIZE;
+    data4 += 8*VSIZE;
+    data5 += 8*VSIZE;
+    data6 += 8*VSIZE;
+    data7 += 8*VSIZE;
+    cnt -= 8*VSIZE;
+  }
+
+  /* Single step through remaining elements */
+  while (cnt > 0) {
+    result += (*data0++ * *data1++) + (*data2++ * *data3++) + (*data4++ * *data5++) + (*data6++ * *data7++);
+    cnt--;
+  }
+
+  /* Combine elements of accumulator vector */
+  xfer.v = accum0 + accum1 + accum2 + accum3 + accum4 + accum5 + accum6 + accum7;
+  for (long i = 0; i < VSIZE; i++) {
+    result += xfer.d[i];
+  }
+
+  /* store result */
+  *dest = result;
+} /* End of dot8_8 */
