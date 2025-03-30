@@ -1,0 +1,31 @@
+SOR OMP ,,,,
+OMEGA = 1.58,,,,
+OPTION=0 (SOR_omp),,,,
+  iter 0 rowlen = 34,,,,
+Before SOR_omp: iterations=0,,,,
+    SOR_omp() done after 102 iters,,,,
+After SOR_omp: iterations=102,,,,
+  iter 1 rowlen = 58,,,,
+Before SOR_omp: iterations=0,,,,
+    SOR_omp() done after 376 iters,,,,
+After SOR_omp: iterations=376,,,,
+  iter 2 rowlen = 98,,,,
+Before SOR_omp: iterations=0,,,,
+    SOR_omp() done after 651 iters,,,,
+After SOR_omp: iterations=651,,,,
+  iter 3 rowlen = 154,,,,
+Before SOR_omp: iterations=0,,,,
+    SOR_omp() done after 1597 iters,,,,
+After SOR_omp: iterations=1597,,,,
+  iter 4 rowlen = 226,,,,
+Before SOR_omp: iterations=0,,,,
+    SOR_omp() done after 1244 iters,,,,
+After SOR_omp: iterations=1244,,,,
+All times are in cycles (if CPNS is set correctly in code),,,,
+,,,,
+size, SOR_omp time, SOR_omp iters, SOR time, SOR iters
+32,1.64E+06,160,1.98E+06,102
+56,6.13E+06,387,1.98E+07,376
+96,2.69E+07,689,1.01E+08,651
+152,1.52E+08,1578,6.09E+08,1597
+224,2.63E+08,1247,1.01E+09,1244
