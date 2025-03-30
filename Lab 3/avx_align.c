@@ -38,8 +38,8 @@ int main(int argc, char *argv[])
 void unalign_heap_naive(float *a)
 {
   __m256* p0 = (__m256*) &a[0];
-  __m256* p1 = (__m256*) &a[1];
-  __m256* p2 = (__m256*) &a[2];
+  float* p1 = &a[1];
+  float* p2 = &a[2];
   __m256 m1, m2;
 
   printf("unalign_heap_naive:\n");
@@ -48,11 +48,11 @@ void unalign_heap_naive(float *a)
     a[i] = i+2;
   }
   for(int i=0; i<10; i++) { printf(" %6.4g", a[i]); } printf("\n");
-  m1 = *p0;
-  *p1 = m1;
+  m1 = _mm256_load_ps(a);
+  _mm256_storeu_ps(p1, m1);
   for(int i=0; i<10; i++) { printf(" %6.4g", a[i]); } printf("\n");
   m2 = _mm256_sqrt_ps(m1);
-  *p2 = m2;
+  _mm256_storeu_ps(p2, m2);
   for(int i=0; i<10; i++) { printf(" %6.4g", a[i]); } printf("\n");
   printf("\n");
 }
@@ -72,11 +72,11 @@ void align_heap_1(float *a)
     a[i] = i+2;
   }
   for(int i=0; i<10; i++) { printf(" %6.4g", a[i]); } printf("\n");
-  m1 = *p0;
-  *p1 = m1;
+  m1 = _mm256_load_ps(a);
+  _mm256_store_ps((float*)p1, m1);
   for(int i=8; i<18; i++) { printf(" %6.4g", a[i]); } printf("\n");
   m2 = _mm256_sqrt_ps(m1);
-  *p2 = m2;
+  _mm256_store_ps((float*)p2, m2);
   for(int i=16; i<26; i++) { printf(" %6.4g", a[i]); } printf("\n");
   printf("\n");
 }
